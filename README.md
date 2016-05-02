@@ -4,6 +4,10 @@ This is the torch implementation for the paper "[Artistic style transfer for vid
 
 Our algorithm allows to transfer the style from one image (for example, a painting) to a whole video sequence and generates consistent and stable stylized video sequences.
 
+**Example video:**
+
+[![Artistic style transfer for videos](http://img.youtube.com/vi/Khuj4ASldmU/0.jpg)](https://www.youtube.com/watch?v=Khuj4ASldmU "Artistic style transfer for videos")
+
 ## Setup
 
 Tested with Ubuntu 14.04.
