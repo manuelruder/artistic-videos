@@ -1,6 +1,6 @@
 # artistic-videos
 
-This is the torch implementation for the paper "Artistic style transfer for videos", based on neural-style code by Justin Johnson https://github.com/jcjohnson/neural-style .
+This is the torch implementation for the paper "[Artistic style transfer for videos](http://arxiv.org/abs/1604.08610)", based on neural-style code by Justin Johnson https://github.com/jcjohnson/neural-style .
 
 Our algorithm allows to transfer the style from one image (for example, a painting) to a whole video sequence and generates consistent and stable stylized video sequences.
 
@@ -62,8 +62,8 @@ Arguments can be given by command line and/or written in a file with one argumen
 * `-tol_loss_relative`: Stop if the relative change of the loss function in an interval of `tol_loss_relative_interval` iterations falls below this threshold. Default is `0.0001` which means that the optimizer stops if the loss function changes less than 0.01% in the given interval. Meaningful values are between `0.001` and `0.0001`.
 * `-tol_loss_relative_interval`: Se above.
 * `-init`:
-  * Single-pass: Two comma-separated values for the initialization method for the first frame and for subsequent frames; one of `random` or `image`, `prev`, `prevWarped`.
-  Default is `random,prevWarped` which uses a noise initialization for the first frame and the previous stylized frame for subsequent frames. `image` initializes with the content frames. `prev` initializes with the previous stylized frames without warping.
+  * Single-pass: Two comma-separated values for the initialization method for the first frame and for subsequent frames; one of `random`, `image`, `prev` or `prevWarped`.
+  Default is `random,prevWarped` which uses a noise initialization for the first frame and the previous stylized frame warped for subsequent frames. `image` initializes with the content frames. `prev` initializes with the previous stylized frames without warping.
   * Multi-pass: One value for the initialization method. Either `random` or `image`.
 * `-optimizer`: The optimization algorithm to use; either `lbfgs` or `adam`; default is `lbfgs`.
   L-BFGS tends to give better results, but uses more memory. Switching to ADAM will reduce memory usage;
