@@ -215,7 +215,6 @@ local function main(params)
     local img = nil
     if init == 'random' then
       img = torch.randn(content_image:size()):float():mul(0.001)
-      print('HALLO')
     elseif init == 'image' then
       img = content_image:clone():float()
     elseif init == 'prevWarped' and frameIdx > params.start_number then
