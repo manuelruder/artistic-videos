@@ -172,7 +172,7 @@ function buildNet(cnn, params, style_images_caffe)
   local net = nn.Sequential()
   
   if temporal_layers[next_temporal_i] == 'init' or temporal_layers[next_temporal_i] == 'initWeighted'  then
-    print("Setting up prevPlusFlow layer at the beginning.")
+    print("Setting up temporal consistency.")
     table.insert(contentLike_layers_indices, current_layer_index)
     table.insert(contentLike_layers_type,
       (temporal_layers[next_temporal_i] == 'initWeighted') and 'prevPlusFlowWeighted' or 'prevPlusFlow')

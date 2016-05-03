@@ -43,12 +43,12 @@ cmd:option('-content_weight', 5e0)
 cmd:option('-style_weight', 1e2)
 cmd:option('-temporal_weight', 5e2)
 cmd:option('-tv_weight', 1e-3)
-cmd:option('-flow_loss_criterion', 'mse', 'mse|smoothl1')
+cmd:option('-temporal_loss_criterion', 'mse', 'mse|smoothl1')
 cmd:option('-num_iterations', 100, 'Number of iterations per pass')
 cmd:option('-tol_loss_relative', 0, 'stop if relative change of the loss function is below this value')
 cmd:option('-tol_loss_relative_interval', 100, 'interval between two function comparisons')
 cmd:option('-normalize_gradients', false)
-cmd:option('-init', 'random', 'random|prevWarped')
+cmd:option('-init', 'random', 'random|image|prevWarped')
 cmd:option('-optimizer', 'lbfgs', 'lbfgs|adam')
 cmd:option('-learning_rate', 1e1)
 
@@ -156,7 +156,7 @@ local function main(params)
       if flag == 1 then imageWarped = prevImageWarped end
       if flag == 0 then imageWarped = nextImageWarped end
       
-      local prevPlusFlowLayersEnabled = run > params.use_temporalLoss_after and imageWarped ~= nil
+      local temporalLossEnabled = run >= params.use_temporalLoss_after and imageWarped ~= nil
 
       -- add layers for this iteration
       for i=1, #losses_indices do
@@ -169,7 +169,7 @@ local function main(params)
           net:insert(content_loss, losses_indices[i] + additional_layers)
           additional_layers = additional_layers + 1
           table.insert(content_losses, content_loss)
-        elseif prevPlusFlowLayersEnabled then
+        elseif temporalLossEnabled then
           imageWarped = preprocess(imageWarped):float()
           if params.gpu >= 0 then imageWarped = imageWarped:cuda() end
           local flowWeights = nil
@@ -181,7 +181,7 @@ local function main(params)
               weightsFileName = getFormatedFlowFileName(params.forwardFlow_weight_pattern, frameIdx+1, frameIdx)
             end
             print(string.format('Reading flowWeights file "%s".', weightsFileName))
-            flowWeights = image.load(weightsFileName)
+            flowWeights = image.load(weightsFileName):float()
             flowWeights = flowWeights:expand(3, flowWeights:size(2), flowWeights:size(3))
             if params.gpu >= 0 then flowWeights = flowWeights:cuda() end
           end
@@ -245,7 +245,7 @@ local function main(params)
 
       -- Remove this iteration's content and temporal layers
       for i=#losses_indices, 1, -1 do
-        if prevPlusFlowLayersEnabled or losses_type[i] == 'content' then
+        if temporalLossEnabled or losses_type[i] == 'content' then
           additional_layers = additional_layers - 1
           net:remove(losses_indices[i] + additional_layers)
         end

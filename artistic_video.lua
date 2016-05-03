@@ -192,7 +192,7 @@ local function main(params)
         for j=1, #J do
           local weightsFileName = getFormatedFlowFileName(params.flowWeight_pattern, J[j], math.abs(frameIdx))
           print(string.format('Reading flowWeights file "%s".', weightsFileName))
-          table.insert(flowWeightsTabl, image.load(weightsFileName))
+          table.insert(flowWeightsTabl, image.load(weightsFileName):float())
         end
         -- Preprocess flow weights, calculate long-term weights
         processFlowWeights(flowWeightsTabl, params.combine_flowWeights_method, params.invert_flowWeights)

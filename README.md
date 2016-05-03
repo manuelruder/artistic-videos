@@ -63,8 +63,8 @@ Arguments can be given by command line and/or written in a file with one argumen
 * `-num_iterations`:
   * Single-pass: Two comma-separated values for the maximum number of iterations for the first frame and for subsequent frames. Default is 2000,1000.
   * Multi-pass: A single value for the number of iterations *per pass*.
-* `-tol_loss_relative`: Stop if the relative change of the loss function in an interval of `tol_loss_relative_interval` iterations falls below this threshold. Default is `0.0001` which means that the optimizer stops if the loss function changes less than 0.01% in the given interval. Meaningful values are between `0.001` and `0.0001`.
-* `-tol_loss_relative_interval`: Se above.
+* `-tol_loss_relative`: Stop if the relative change of the loss function in an interval of `tol_loss_relative_interval` iterations falls below this threshold. Default is `0.0001` which means that the optimizer stops if the loss function changes less than 0.01% in the given interval. Meaningful values are between `0.001` and `0.0001` in the default interval.
+* `-tol_loss_relative_interval`: Se above. Default value: `50`.
 * `-init`:
   * Single-pass: Two comma-separated values for the initialization method for the first frame and for subsequent frames; one of `random`, `image`, `prev` or `prevWarped`.
   Default is `random,prevWarped` which uses a noise initialization for the first frame and the previous stylized frame warped for subsequent frames. `image` initializes with the content frames. `prev` initializes with the previous stylized frames without warping.
@@ -79,7 +79,7 @@ Arguments can be given by command line and/or written in a file with one argumen
   L1 normalized. Idea from [andersbll/neural_artistic_style](https://github.com/andersbll/neural_artistic_style).
 
 **Output options**:
-* `-output_image`: Name of the output image. Default is `out.png`.
+* `-output_image`: Name of the output image. Default is `out.png` which will produce output images of the form *out-<frameIdx>.png* for the single-pass and *out-<frameIdx>_<passIdx>.png* for the multi-pass algorithm.
 * `-output_folder`: Directory where the output images should be saved.
 * `-print_iter`: Print progress every `print_iter` iterations. Set to 0 to disable printing.
 * `-save_iter`: Save the image every `save_iter` iterations. Set to 0 to disable saving intermediate results.
@@ -116,10 +116,10 @@ Arguments can be given by command line and/or written in a file with one argumen
 If you use this code or its parts in your research, please cite the following paper:
 
 ```
-@misc{1604.08610,
-Author = {Manuel Ruder and Alexey Dosovitskiy and Thomas Brox},
-Title = {Artistic style transfer for videos},
-Year = {2016},
-Eprint = {arXiv:1604.08610},
+@TechReport{RuderDB2016,
+  author = {Manuel Ruder and Alexey Dosovitskiy and Thomas Brox},
+  title = {Artistic style transfer for videos},
+  institution  = "arXiv:1604.08610",
+  year         = "2016",
 }
 ```
