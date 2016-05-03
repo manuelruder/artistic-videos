@@ -1,9 +1,9 @@
 # Specify the path to the optical flow utility here.
-# Also check line 43 and 44 whether the arguments are in the correct order.
+# Also check line 44 and 47 whether the arguments are in the correct order.
 flowCommandLine=""
 
 if [ -z "$flowCommandLine" ]; then
-  echo "Please open this script file and specify the command line for computing the optical flow."
+  echo "Please open makeOptFlow.sh and specify the command line for computing the optical flow."
   exit 1
 fi
 
@@ -34,14 +34,18 @@ fi
 i=$[$startFrame]
 j=$[$startFrame + $stepSize]
 
-mkdir "${folderName}"
+mkdir -p "${folderName}"
 
 while true; do
   file1=$(printf "$filePattern" "$i")
   file2=$(printf "$filePattern" "$j")
   if [ -a $file2 ]; then
-    eval $flowCommandLine "$file1" "$file2" "${folderName}/forward_${i}_${j}.flo"
-    eval $flowCommandLine "$file2" "$file1" "${folderName}/backward_${j}_${i}.flo"
+    if [ ! -f ${folderName}/forward_${i}_${j}.flo ]; then
+      eval $flowCommandLine "$file1" "$file2" "${folderName}/forward_${i}_${j}.flo"
+    fi
+    if [ ! -f ${folderName}/backward_${j}_${i}.flo ]; then
+      eval $flowCommandLine "$file2" "$file1" "${folderName}/backward_${j}_${i}.flo"
+    fi
     ./consistencyChecker/consistencyChecker "${folderName}/backward_${j}_${i}.flo" "${folderName}/forward_${i}_${j}.flo" "${folderName}/reliable_${j}_${i}.pgm"
     ./consistencyChecker/consistencyChecker "${folderName}/forward_${i}_${j}.flo" "${folderName}/backward_${j}_${i}.flo" "${folderName}/reliable_${i}_${j}.pgm"
   else

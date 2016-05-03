@@ -13,12 +13,17 @@ Our algorithm allows to transfer the style from one image (for example, a painti
 Tested with Ubuntu 14.04.
 
 * Install torch7 and loadcaffe as described by jcjohnson: [neural-style#setup](https://github.com/jcjohnson/neural-style#setup).
-* The frames of the video must be saved as individual image files, one file per frame. This can be easily done using [ffmpeg](https://ffmpeg.org/). For example: `ffmpeg -i video.mp4 frame_%04d.ppm`.
 * To use the temporal consistency constraints, you need to set up an utility which estimates the optical flow between two images and creates a flow file in the [middlebury file format](http://vision.middlebury.edu/flow/code/flow-code/README.txt). For example, you can use [DeepFlow](http://lear.inrialpes.fr/src/deepflow/) which we also used in our paper. Then you can make use of the script `makeOptFlow.sh` to generate the optical flow for all frames as well as the certainty of the flow field. Specify the path to the optical flow utility in the first line of this script file.
 
-## Usage
+## Simple style transfer
 
-There are two versions of this algorithm, a single-pass and a multi-pass version. The multi-pass version yields better results in case of strong camera motion, but needs more iternations per frame.
+To perform style transfer with mostly the default parameters, execute `stylizeVideo.sh <path_to_video>`. This script will perform all the steps necessay to create a stylized version of the video. Note: you still need to specify the path to the optical flow utility as described above. And you have to have ffmpeg (or libav-tools for Ubuntu 14.10 and earlier) installed.
+
+## Advanced Usage
+
+Please read the script `stylizeVideo.sh` to see which setps you have to perform in advance exactly. Basically you have to save the frames of the video as individual image files and you have to compute the optical flow between all adjacent frames as well as the certainty of the flow field (both can be accomplished with `makeOptFlow.sh`).
+
+There are two versions of this algorithm, a single-pass and a multi-pass version. The multi-pass version yields better results in case of strong camera motion, but needs more iterations per frame.
 
 Basic usage:
 
@@ -79,8 +84,8 @@ Arguments can be given by command line and/or written in a file with one argumen
   L1 normalized. Idea from [andersbll/neural_artistic_style](https://github.com/andersbll/neural_artistic_style).
 
 **Output options**:
-* `-output_image`: Name of the output image. Default is `out.png` which will produce output images of the form *out-<frameIdx>.png* for the single-pass and *out-<frameIdx>_<passIdx>.png* for the multi-pass algorithm.
-* `-output_folder`: Directory where the output images should be saved.
+* `-output_image`: Name of the output image. Default is `out.png` which will produce output images of the form *out-\<frameIdx\>.png* for the single-pass and *out-\<frameIdx\>_\<passIdx\>.png* for the multi-pass algorithm.
+* `-output_folder`: Directory where the output images should be saved. Must end with a slash.
 * `-print_iter`: Print progress every `print_iter` iterations. Set to 0 to disable printing.
 * `-save_iter`: Save the image every `save_iter` iterations. Set to 0 to disable saving intermediate results.
 * `-save_init`: Set to 1 to save the initialization image; 0 otherwise.
