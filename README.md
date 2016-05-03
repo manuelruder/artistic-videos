@@ -12,7 +12,7 @@ Our algorithm allows to transfer the style from one image (for example, a painti
 
 Tested with Ubuntu 14.04.
 
-* Install torch7 and loadcaffe as described by jcjohnson: [neural-style#setup](https://github.com/jcjohnson/neural-style#setup).
+* Install torch7 and loadcaffe and download the VGG model as described by jcjohnson: [neural-style#setup](https://github.com/jcjohnson/neural-style#setup).
 * To use the temporal consistency constraints, you need to set up an utility which estimates the optical flow between two images and creates a flow file in the [middlebury file format](http://vision.middlebury.edu/flow/code/flow-code/README.txt). For example, you can use [DeepFlow](http://lear.inrialpes.fr/src/deepflow/) which we also used in our paper. Then you can make use of the script `makeOptFlow.sh` to generate the optical flow for all frames as well as the certainty of the flow field. Specify the path to the optical flow utility in the first line of this script file.
 
 ## Simple style transfer
