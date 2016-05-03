@@ -9,11 +9,17 @@ command -v $FFMPEG >/dev/null 2>&1 || {
   }
 }
 
+if [ "$#" -le 1 ]; then
+   echo "Usage: ./stylizeVideo <path_to_video> <path_to_style_image>"
+   exit 1
+fi
+
 # Parse arguments
 filename=$(basename "$1")
 extension="${filename##*.}"
 filename="${filename%.*}"
 filename=${filename//[%]/x}
+style_image=$2
 
 # Create output folder
 mkdir -p $filename
@@ -59,6 +65,7 @@ th artistic_video.lua \
 -style_weight $style_weight \
 -temporal_weight $temporal_weight \
 -output_folder ${filename}/ \
+-style_image $style_image \
 -gpu $gpu
 
 # Create video from output images.

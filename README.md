@@ -17,7 +17,7 @@ Tested with Ubuntu 14.04.
 
 ## Simple style transfer
 
-To perform style transfer with mostly the default parameters, execute `stylizeVideo.sh <path_to_video>`. This script will perform all the steps necessay to create a stylized version of the video. Note: you still need to specify the path to the optical flow utility as described above. And you have to have ffmpeg (or libav-tools for Ubuntu 14.10 and earlier) installed.
+To perform style transfer with mostly the default parameters, execute `stylizeVideo.sh <path_to_video> <path_to_style_image>`. This script will perform all the steps necessay to create a stylized version of the video. Note: you still need to specify the path to the optical flow utility as described above. And you have to have ffmpeg (or libav-tools for Ubuntu 14.10 and earlier) installed.
 
 ## Advanced Usage
 
