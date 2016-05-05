@@ -28,7 +28,7 @@ echo ""
 read -p "This algorithm needs a lot of memory. \
 For a resolution of 450x350 you'll need roughly 4GB VRAM. \
 VRAM usage increases linear with resolution. \
-For HD resolution, you would probably need a Titan X 12GB. \
+Maximum recommended resolution with a Titan X 12GB: 960:540. \
 Please enter a resolution at which the video should be processed, \
 in the format w:h, or leave blank to use the original resolution : " resolution
 
