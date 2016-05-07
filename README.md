@@ -12,8 +12,16 @@ Our algorithm allows to transfer the style from one image (for example, a painti
 
 Tested with Ubuntu 14.04.
 
-* Install torch7, loadcaffe and the CUDA backend (otherwise you have to use CPU mode which is horribly slow) and download the VGG model, as described by jcjohnson: [neural-style#setup](https://github.com/jcjohnson/neural-style#setup).
+* Install torch7, loadcaffe and the CUDA backend (otherwise you have to use CPU mode which is horribly slow) and download the VGG model, as described by jcjohnson: [neural-style#setup](https://github.com/jcjohnson/neural-style#setup). Optional: Install cuDNN. This requires registration as a developer with NVIDIA, but significantly reduces memory usage.
 * To use the temporal consistency constraints, you need to set up an utility which estimates the optical flow between two images and creates a flow file in the [middlebury file format](http://vision.middlebury.edu/flow/code/flow-code/README.txt). For example, you can use [DeepFlow](http://lear.inrialpes.fr/src/deepflow/) which we also used in our paper. Then you can make use of the script `makeOptFlow.sh` to generate the optical flow for all frames as well as the certainty of the flow field. Specify the path to the optical flow utility in the first line of this script file.
+
+## Requirements
+
+A fast Nvidia GPU with a large amount of video memory is recommended to execute this script. The ability to run in CPU mode is impractical due to the enormous running time.
+
+For a resolution of 450x350, you will need at least a 4GB GPU (around 3,5 GB memory usage). If you have cuDNN installed, a 2GB GPU is sufficient (around 1,7GB memory usage). Memory usage scales lineary with resolution, so if you experience an out of memory error, downscale the video.
+
+Other ways to reduce memory footprint are to use the ADAM optimizer instead of L-BFGS or use the NIN Imagenet model instead of VGG-19. However, we didn't test our method with either of these and you will likely get inferior results.
 
 ## Simple style transfer
 
