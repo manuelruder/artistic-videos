@@ -24,13 +24,29 @@ style_image=$2
 # Create output folder
 mkdir -p $filename
 
+
 echo ""
-read -p "This algorithm needs a lot of memory. \
-For a resolution of 450x350 you'll need roughly 4GB VRAM. \
-VRAM usage increases linear with resolution. \
-Maximum recommended resolution with a Titan X 12GB: 960:540. \
-Please enter a resolution at which the video should be processed, \
-in the format w:h, or leave blank to use the original resolution : " resolution
+read -p "Do you want to use cuDNN, if installed? [y/N] : " -n 1 -r
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+  backend=cudnn
+  echo ""
+  read -p "This algorithm needs a lot of memory. \
+  For a resolution of 450x350 you'll need roughly 2GB VRAM. \
+  VRAM usage increases linear with resolution. \
+  Please enter a resolution at which the video should be processed, \
+  in the format w:h, or leave blank to use the original resolution : " resolution
+else
+  backend=nn
+  echo ""
+  read -p "This algorithm needs a lot of memory. \
+  For a resolution of 450x350 you'll need roughly 4GB VRAM. \
+  VRAM usage increases linear with resolution. \
+  Maximum recommended resolution with a Titan X 12GB: 960:540. \
+  Please enter a resolution at which the video should be processed, \
+  in the format w:h, or leave blank to use the original resolution : " resolution
+fi
+
 
 # Save frames of the video as individual image files
 if [ -z $resolution ]; then
@@ -66,6 +82,7 @@ th artistic_video.lua \
 -temporal_weight $temporal_weight \
 -output_folder ${filename}/ \
 -style_image $style_image \
+-backend $backend \
 -gpu $gpu
 
 # Create video from output images.
