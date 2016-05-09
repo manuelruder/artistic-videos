@@ -66,7 +66,7 @@ fi
 
 echo ""
 echo "Computing optical flow. This may take a while..."
-./makeOptFlow.sh ./${filename}/frame_%04d.ppm ./${filename}/flow_$resolution
+bash makeOptFlow.sh ./${filename}/frame_%04d.ppm ./${filename}/flow_$resolution
 
 echo ""
 read -p "How much do you want to weight the style reconstruction term? \

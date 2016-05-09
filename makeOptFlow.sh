@@ -1,6 +1,6 @@
 # Specify the path to the optical flow utility here.
 # Also check line 44 and 47 whether the arguments are in the correct order.
-flowCommandLine=""
+flowCommandLine="bash run-deepflow.sh"
 
 if [ -z "$flowCommandLine" ]; then
   echo "Please open makeOptFlow.sh and specify the command line for computing the optical flow."
