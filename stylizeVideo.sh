@@ -55,7 +55,6 @@ else
   exit 1
 fi
 
-
 # Save frames of the video as individual image files
 if [ -z $resolution ]; then
   $FFMPEG -i $1 ${filename}/frame_%04d.ppm
@@ -63,10 +62,6 @@ if [ -z $resolution ]; then
 else
   $FFMPEG -i $1 -vf scale=$resolution ${filename}/frame_%04d.ppm
 fi
-
-echo ""
-echo "Computing optical flow. This may take a while..."
-bash makeOptFlow.sh ./${filename}/frame_%04d.ppm ./${filename}/flow_$resolution
 
 echo ""
 read -p "How much do you want to weight the style reconstruction term? \
@@ -80,6 +75,10 @@ echo ""
 read -p "Enter the zero-indexed ID of the GPU to use, or -1 for CPU mode (very slow!).\
  [0] $cr > " gpu
 gpu=${gpu:-0}
+
+echo ""
+echo "Computing optical flow. This may take a while..."
+bash makeOptFlow.sh ./${filename}/frame_%04d.ppm ./${filename}/flow_$resolution
 
 # Perform style transfer
 th artistic_video.lua \
