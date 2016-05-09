@@ -1,4 +1,8 @@
 set -e
+# Get a carriage return into `cr`
+cr=`echo $'\n.'`
+cr=${cr%.}
+
 
 # Find out whether ffmpeg or avconv is installed on the system
 FFMPEG=ffmpeg
@@ -26,25 +30,29 @@ mkdir -p $filename
 
 
 echo ""
-read -p "Do you want to use cuDNN, if installed? [y/N] : " -n 1 -r
+read -p "Which backend do you want to use? \
+For Nvidia GPU, use cudnn if avalable, otherwise nn. \
+For non-Nvidia GPU, use clnn. Note: You have to have the given backend installed in order to use it. [nn] $cr > " backend
+backend=${backend:-nn}
 
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-  backend=cudnn
+if [ "$backend" == "cudnn" ]; then
   echo ""
   read -p "This algorithm needs a lot of memory. \
   For a resolution of 450x350 you'll need roughly 2GB VRAM. \
   VRAM usage increases linear with resolution. \
   Please enter a resolution at which the video should be processed, \
-  in the format w:h, or leave blank to use the original resolution : " resolution
-else
-  backend=nn
+  in the format w:h, or leave blank to use the original resolution $cr > " resolution
+elif [ "$backend" = "nn" ] || [ "$backend" = "clnn" ]; then
   echo ""
   read -p "This algorithm needs a lot of memory. \
   For a resolution of 450x350 you'll need roughly 4GB VRAM. \
   VRAM usage increases linear with resolution. \
   Maximum recommended resolution with a Titan X 12GB: 960:540. \
   Please enter a resolution at which the video should be processed, \
-  in the format w:h, or leave blank to use the original resolution : " resolution
+  in the format w:h, or leave blank to use the original resolution $cr > " resolution
+else
+  echo "Unknown backend."
+  exit 1
 fi
 
 
@@ -63,14 +71,14 @@ echo "Computing optical flow. This may take a while..."
 echo ""
 read -p "How much do you want to weight the style reconstruction term? \
 Default value: 1e2 for a resolution of 450x350. Increase for a higher resolution. \
-[1e2] : " style_weight
+[1e2] $cr > " style_weight
 style_weight=${style_weight:-1e2}
 
 temporal_weight=1e3
 
 echo ""
 read -p "Enter the zero-indexed ID of the GPU to use, or -1 for CPU mode (very slow!).\
- [0] : " gpu
+ [0] $cr > " gpu
 gpu=${gpu:-0}
 
 # Perform style transfer
@@ -83,7 +91,8 @@ th artistic_video.lua \
 -output_folder ${filename}/ \
 -style_image $style_image \
 -backend $backend \
--gpu $gpu
+-gpu $gpu \
+-cudnn_autotune
 
 # Create video from output images.
 $FFMPEG -i ${filename}/out-%d.png ${filename}-stylized.$extension

@@ -64,7 +64,7 @@ cmd:option('-style_scale', 1.0)
 cmd:option('-pooling', 'max', 'max|avg')
 cmd:option('-proto_file', 'models/VGG_ILSVRC_19_layers_deploy.prototxt')
 cmd:option('-model_file', 'models/VGG_ILSVRC_19_layers.caffemodel')
-cmd:option('-backend', 'nn', 'nn|cudnn')
+cmd:option('-backend', 'nn', 'nn|cudnn|clnn')
 cmd:option('-cudnn_autotune', false)
 cmd:option('-seed', -1)
 
@@ -79,9 +79,15 @@ end
 
 local function main(params)
   if params.gpu >= 0 then
-    require 'cutorch'
-    require 'cunn'
-    cutorch.setDevice(params.gpu + 1)
+    if params.backend ~= 'clnn' then
+      require 'cutorch'
+      require 'cunn'
+      cutorch.setDevice(params.gpu + 1)
+    else
+      require 'clnn'
+      require 'cltorch'
+      cltorch.setDevice(params.gpu + 1)
+    end
   else
     params.backend = 'nn'
   end
@@ -94,10 +100,10 @@ local function main(params)
     cudnn.SpatialConvolution.accGradParameters = nn.SpatialConvolutionMM.accGradParameters -- ie: nop
   end
   
-  local cnn = loadcaffe.load(params.proto_file, params.model_file, params.backend):float()
-  if params.gpu >= 0 then
-    cnn:cuda()
-  end
+  local loadcaffe_backend = params.backend
+  if params.backend == 'clnn' then loadcaffe_backend = 'nn' end
+  local cnn = loadcaffe.load(params.proto_file, params.model_file, loadcaffe_backend):float()
+  cnn = MaybePutOnGPU(cnn, params)
   
   local end_image_idx = params.num_images + params.start_number - 1
 
@@ -163,15 +169,13 @@ local function main(params)
         if losses_type[i] == 'content'  then
           local content_loss = getContentLossModuleForLayer(net,
             losses_indices[i] + additional_layers,
-            content_image_caffe,
-            params.content_weight,
-            params.normalize_gradients, params.gpu)
+            content_image_caffe, params)
           net:insert(content_loss, losses_indices[i] + additional_layers)
           additional_layers = additional_layers + 1
           table.insert(content_losses, content_loss)
         elseif temporalLossEnabled then
           imageWarped = preprocess(imageWarped):float()
-          if params.gpu >= 0 then imageWarped = imageWarped:cuda() end
+          imageWarped = MaybePutOnGPU(imageWarped, params)
           local flowWeights = nil
           if losses_type[i] == 'prevPlusFlowWeighted' then
             local weightsFileName = nil
@@ -183,7 +187,7 @@ local function main(params)
             print(string.format('Reading flowWeights file "%s".', weightsFileName))
             flowWeights = image.load(weightsFileName):float()
             flowWeights = flowWeights:expand(3, flowWeights:size(2), flowWeights:size(3))
-            if params.gpu >= 0 then flowWeights = flowWeights:cuda() end
+            flowWeights = MaybePutOnGPU(flowWeights, params)
           end
           local loss_module = getWeightedContentLossModuleForLayer(net,
             losses_indices[i] + additional_layers, imageWarped,
@@ -233,7 +237,7 @@ local function main(params)
         img = preprocess(img):float()
       end
       
-      if params.gpu >= 0 then img = img:cuda() end
+      img = MaybePutOnGPU(img, params)
 
       if params.save_init >= 1 then
         save_image(img, params.output_folder .. string.format('init-%02d_%02d.png', frameIdx, run))

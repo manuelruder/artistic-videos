@@ -127,6 +127,7 @@ function runOptimization(params, net, content_losses, style_losses, temporal_los
   
   end_time = os.time()
   elapsed_time = os.difftime(end_time-start_time)
+  print("Running time: " .. elapsed_time .. "s")
   
   print_end(num_calls)
   maybe_save(num_calls, true)
@@ -181,9 +182,7 @@ function buildNet(cnn, params, style_images_caffe)
   
   if params.tv_weight > 0 then
     local tv_mod = nn.TVLoss(params.tv_weight):float()
-    if params.gpu >= 0 then
-      tv_mod:cuda()
-    end
+    tv_mod = MaybePutOnGPU(tv_mod, params) 
     net:add(tv_mod)
     current_layer_index = current_layer_index + 1
   end
@@ -198,7 +197,7 @@ function buildNet(cnn, params, style_images_caffe)
         local kW, kH = layer.kW, layer.kH
         local dW, dH = layer.dW, layer.dH
         local avg_pool_layer = nn.SpatialAveragePooling(kW, kH, dW, dH):float()
-        if params.gpu >= 0 then avg_pool_layer:cuda() end
+        avg_pool_layer = MaybePutOnGPU(avg_pool_layer, params)
         local msg = 'Replacing max pooling at layer %d with average pooling'
         print(string.format(msg, i))
         net:add(avg_pool_layer)
@@ -221,9 +220,7 @@ function buildNet(cnn, params, style_images_caffe)
       if name == style_layers[next_style_i] then
         print("Setting up style layer  ", i, ":", layer.name)
         local gram = GramMatrix():float()
-        if params.gpu >= 0 then
-          gram = gram:cuda()
-        end
+        gram = MaybePutOnGPU(gram, params)
         local target = nil
         for i = 1, #style_images_caffe do
           local target_features = net:forward(style_images_caffe[i]):clone()
@@ -238,9 +235,7 @@ function buildNet(cnn, params, style_images_caffe)
         end
         local norm = params.normalize_gradients
         local loss_module = nn.StyleLoss(params.style_weight, target, norm):float()
-        if params.gpu >= 0 then
-          loss_module:cuda()
-        end
+        loss_module = MaybePutOnGPU(loss_module, params)
         net:add(loss_module)
         current_layer_index = current_layer_index + 1
         table.insert(style_losses, loss_module)
@@ -431,17 +426,15 @@ function TVLoss:updateGradInput(input, gradOutput)
   return self.gradInput
 end
 
-function getContentLossModuleForLayer(net, layer_idx, target_img, strength, norm, gpu)
+function getContentLossModuleForLayer(net, layer_idx, target_img, params)
   local tmpNet = nn.Sequential()
   for i = 1, layer_idx-1 do
     local layer = net:get(i)
     tmpNet:add(layer)
   end
   local target = tmpNet:forward(target_img):clone()
-  local loss_module = nn.ContentLoss(strength, target, norm):float()
-  if gpu >= 0 then
-    loss_module:cuda()
-  end
+  local loss_module = nn.ContentLoss(params.content_weight, target, params.normalize_gradients):float()
+  loss_module = MaybePutOnGPU(loss_module, params)
   return loss_module
 end
 
@@ -454,15 +447,26 @@ function getWeightedContentLossModuleForLayer(net, layer_idx, target_img, params
   local target = tmpNet:forward(target_img):clone()
   local loss_module = nn.WeightedContentLoss(params.temporal_weight, target, weights,
       params.normalize_gradients, params.temporal_loss_criterion):float()
-  if params.gpu >= 0 then
-    loss_module:cuda()
-  end
+  loss_module = MaybePutOnGPU(loss_module, params)
   return loss_module
 end
 
 ---
 --- HELPER FUNCTIONS
 ---
+
+function MaybePutOnGPU(obj, params)
+  if params.gpu >= 0 then
+    if params.backend ~= 'clnn' then
+      return obj:cuda()
+    else
+      return obj:cl()
+    end
+  end
+  return obj
+end
+  
+
 
 -- Preprocess an image before passing it to a Caffe model.
 -- We need to rescale from [0, 1] to [0, 255], convert from RGB to BGR,
@@ -556,9 +560,7 @@ end
 function getContentImage(frameIdx, params)
   local content_image = image.load(string.format(params.content_pattern, frameIdx), 3)
   content_image = preprocess(content_image):float()
-  if params.gpu >= 0 then
-    content_image = content_image:cuda()
-  end
+  content_image = MaybePutOnGPU(content_image, params)
   return content_image
 end
 
@@ -578,10 +580,9 @@ function getStyleImages(params)
     table.insert(style_images_caffe, img_caffe)
   end
 
-  if params.gpu >= 0 then
-    for i = 1, #style_images_caffe do
-      style_images_caffe[i] = style_images_caffe[i]:cuda()
-    end
+  for i = 1, #style_images_caffe do
+     style_images_caffe[i] = MaybePutOnGPU(style_images_caffe[i], params)
   end
+ 
   return style_images_caffe
 end

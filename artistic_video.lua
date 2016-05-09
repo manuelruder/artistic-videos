@@ -57,7 +57,7 @@ cmd:option('-style_scale', 1.0)
 cmd:option('-pooling', 'max', 'max|avg')
 cmd:option('-proto_file', 'models/VGG_ILSVRC_19_layers_deploy.prototxt')
 cmd:option('-model_file', 'models/VGG_ILSVRC_19_layers.caffemodel')
-cmd:option('-backend', 'nn', 'nn|cudnn')
+cmd:option('-backend', 'nn', 'nn|cudnn|clnn')
 cmd:option('-cudnn_autotune', false)
 cmd:option('-seed', -1)
 cmd:option('-content_layers', 'relu4_2', 'layers for content')
@@ -73,12 +73,16 @@ function nn.SpatialConvolutionMM:accGradParameters()
 end
 
 local function main(params)
-   -- TODO: Merge openCl support:
-   -- https://github.com/jcjohnson/neural-style/commit/289de88bb302d8139bdc7f8680da7347b9de9ab3
   if params.gpu >= 0 then
-    require 'cutorch'
-    require 'cunn'
-    cutorch.setDevice(params.gpu + 1)
+    if params.backend ~= 'clnn' then
+      require 'cutorch'
+      require 'cunn'
+      cutorch.setDevice(params.gpu + 1)
+    else
+      require 'clnn'
+      require 'cltorch'
+      cltorch.setDevice(params.gpu + 1)
+    end
   else
     params.backend = 'nn'
   end
@@ -90,14 +94,14 @@ local function main(params)
     end
     cudnn.SpatialConvolution.accGradParameters = nn.SpatialConvolutionMM.accGradParameters -- ie: nop
   end
-  
-  local cnn = loadcaffe.load(params.proto_file, params.model_file, params.backend):float()
-  if params.gpu >= 0 then
-    cnn:cuda()
-  end
-  
+
+  local loadcaffe_backend = params.backend
+  if params.backend == 'clnn' then loadcaffe_backend = 'nn' end
+  local cnn = loadcaffe.load(params.proto_file, params.model_file, loadcaffe_backend):float()
+  cnn = MaybePutOnGPU(cnn, params)
+
   local style_images_caffe = getStyleImages(params)
-  
+
   -- Set up the network, inserting style losses. Content and temporal loss will be inserted in each iteration.
   local net, style_losses, losses_indices, losses_type = buildNet(cnn, params, style_images_caffe)
 
@@ -119,10 +123,10 @@ local function main(params)
   local init_first, init_subseq = init_split[1], init_split[2] or init_split[1]
   local firstImg = nil
   local flow_relative_indices_split = params.flow_relative_indices:split(",")
-  
+
   -- Iterate over all frames in the video sequence
   for frameIdx=params.start_number + params.continue_with - 1, params.start_number + params.num_images - 1 do
-  
+
     -- Set seed
     if params.seed >= 0 then
       torch.manualSeed(params.seed)
@@ -163,7 +167,7 @@ local function main(params)
         local fileName = build_OutFilename(params, math.abs(prevIndex - params.start_number + 1), -1)
         local imgWarped = warpImage(image.load(fileName, 3), flow)
         imgWarped = preprocess(imgWarped):float()
-        if params.gpu >= 0 then imgWarped = imgWarped:cuda() end
+        imgWarped = MaybePutOnGPU(imgWarped, params)
         table.insert(imgsWarped, imgWarped)
       end
     end
@@ -172,8 +176,7 @@ local function main(params)
     for i=1, #losses_indices do
       if losses_type[i] == 'content'  then
         local loss_module = getContentLossModuleForLayer(net,
-          losses_indices[i] + additional_layers, content_image,
-          params.content_weight, params.normalize_gradients, params.gpu)
+          losses_indices[i] + additional_layers, content_image, params)
         net:insert(loss_module, losses_indices[i] + additional_layers)
         table.insert(content_losses, loss_module)
         additional_layers = additional_layers + 1
@@ -200,7 +203,7 @@ local function main(params)
         for j=1, #J do
           local flowWeights = flowWeightsTabl[j]
           flowWeights = flowWeights:expand(3, flowWeights:size(2), flowWeights:size(3))
-          if params.gpu >= 0 then flowWeights = flowWeights:cuda() end
+          flowWeights = MaybePutOnGPU(flowWeights, params)
           local loss_module = getWeightedContentLossModuleForLayer(net,
             losses_indices[i] + additional_layers, imgsWarped[j],
             params, flowWeights)
@@ -234,7 +237,7 @@ local function main(params)
       print('ERROR: Invalid initialization method.')
       os.exit()
     end
-    if params.gpu >= 0 then img = img:cuda() end
+    img = MaybePutOnGPU(img, params)
     if params.save_init >= 1 then
       save_image(img,
         string.format('%sinit-%02d.png', params.output_folder, math.abs(frameIdx - params.start_number + 1)))

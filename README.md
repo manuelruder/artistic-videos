@@ -12,16 +12,16 @@ Our algorithm allows to transfer the style from one image (for example, a painti
 
 Tested with Ubuntu 14.04.
 
-* Install torch7, loadcaffe and the CUDA backend (otherwise you have to use CPU mode which is horribly slow) and download the VGG model, as described by jcjohnson: [neural-style#setup](https://github.com/jcjohnson/neural-style#setup). Optional: Install cuDNN. This requires registration as a developer with NVIDIA, but significantly reduces memory usage.
+* Install torch7, loadcaffe and the CUDA backend (otherwise you have to use CPU mode which is horribly slow) and download the VGG model, as described by jcjohnson: [neural-style#setup](https://github.com/jcjohnson/neural-style#setup). Optional: Install cuDNN. This requires registration as a developer with NVIDIA, but significantly reduces memory usage. For non-Nvidia GPUs you can also use the OpenCL backend.
 * To use the temporal consistency constraints, you need to set up an utility which estimates the optical flow between two images and creates a flow file in the [middlebury file format](http://vision.middlebury.edu/flow/code/flow-code/README.txt). For example, you can use [DeepFlow](http://lear.inrialpes.fr/src/deepflow/) which we also used in our paper. Then you can make use of the script `makeOptFlow.sh` to generate the optical flow for all frames as well as the certainty of the flow field. Specify the path to the optical flow utility in the first line of this script file.
 
 ## Requirements
 
-A fast Nvidia GPU with a large amount of video memory is recommended to execute this script. The ability to run in CPU mode is impractical due to the enormous running time.
+A fast GPU with a large amount of video memory is recommended to execute this script. The ability to run in CPU mode is impractical due to the enormous running time.
 
-For a resolution of 450x350, you will need at least a 4GB GPU (around 3,5 GB memory usage). If you have cuDNN installed, a 2GB GPU is sufficient (around 1,7GB memory usage). Memory usage scales lineary with resolution, so if you experience an out of memory error, downscale the video.
+For a resolution of 450x350, you will need at least a 4GB GPU (around 3,5 GB memory usage). If you use cuDNN, a 2GB GPU is sufficient (around 1,7GB memory usage). Memory usage scales lineary with resolution, so if you experience an out of memory error, downscale the video.
 
-Other ways to reduce memory footprint are to use the ADAM optimizer instead of L-BFGS or use the NIN Imagenet model instead of VGG-19. However, we didn't test our method with either of these and you will likely get inferior results.
+Other ways to reduce memory footprint are to use the ADAM optimizer instead of L-BFGS and/or to use the NIN Imagenet model instead of VGG-19. However, we didn't test our method with either of these and you will likely get inferior results.
 
 ## Simple style transfer
 
@@ -111,10 +111,10 @@ Arguments can be given by command line and/or written in a file with one argumen
 * `-model_file`: Path to the `.caffemodel` file for the VGG Caffe model.
   Default is the original VGG-19 model; you can also try the normalized VGG-19 model used in the paper.
 * `-pooling`: The type of pooling layers to use; one of `max` or `avg`. Default is `max`.
-  The VGG-19 models uses max pooling layers, but the paper mentions that replacing these layers with average
-  pooling layers can improve the results. I haven't been able to get good results using average pooling, but
+  The VGG-19 models uses max pooling layers, but Gatys et al. mentioned that replacing these layers with average
+  pooling layers can improve the results. We haven't been able to get good results using average pooling, but
   the option is here.
-* `-backend`: `nn` or `cudnn`. Default is `nn`. `cudnn` requires
+* `-backend`: `nn`, `cudnn` or `clnn`. Default is `nn`. `cudnn` requires
   [cudnn.torch](https://github.com/soumith/cudnn.torch) and may reduce memory usage.
 * `-cudnn_autotune`: When using the cuDNN backend, pass this flag to use the built-in cuDNN autotuner to select
   the best convolution algorithms for your architecture. This will make the first iteration a bit slower and can
