@@ -465,8 +465,6 @@ function MaybePutOnGPU(obj, params)
   end
   return obj
 end
-  
-
 
 -- Preprocess an image before passing it to a Caffe model.
 -- We need to rescale from [0, 1] to [0, 255], convert from RGB to BGR,
@@ -538,6 +536,22 @@ function str_split(str, delim, maxNb)
     return result
 end
 
+function fileExists(name)
+   local f=io.open(name,"r")
+   if f~=nil then io.close(f) return true else return false end
+end
+
+function calcNumberOfContentImages(params)
+  local frameIdx = 1
+  while frameIdx < 100000 do
+    local fileName = string.format(params.content_pattern, frameIdx + params.start_number)
+    if not fileExists(fileName) then return frameIdx end
+    frameIdx = frameIdx + 1
+  end
+  -- If there are too many content frames, something may be wrong.
+  return 0
+end
+
 function build_OutFilename(params, image_number, iterationOrRun)
   local ext = paths.extname(params.output_image)
   local basename = paths.basename(params.output_image, ext)
@@ -558,6 +572,8 @@ function getFormatedFlowFileName(pattern, fromIndex, toIndex)
 end
 
 function getContentImage(frameIdx, params)
+  local fileName = string.format(params.content_pattern, frameIdx)
+  if not fileExists(fileName) then return nil end
   local content_image = image.load(string.format(params.content_pattern, frameIdx), 3)
   content_image = preprocess(content_image):float()
   content_image = MaybePutOnGPU(content_image, params)

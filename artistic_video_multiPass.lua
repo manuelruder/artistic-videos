@@ -17,7 +17,7 @@ cmd:option('-style_image', 'example/seated-nude.jpg',
 cmd:option('-style_blend_weights', 'nil')
 cmd:option('-content_pattern', 'example/marple8_%02d.ppm',
            'Content target pattern')
-cmd:option('-num_images', 5, 'Number of content images')
+cmd:option('-num_images', 0, 'Number of content images. Set 0 for autodetect.')
 cmd:option('-start_number', 1, 'Frame index to start with')
 cmd:option('-gpu', 0, 'Zero-indexed ID of the GPU to use; for CPU mode set -gpu = -1')
 
@@ -105,7 +105,12 @@ local function main(params)
   local cnn = loadcaffe.load(params.proto_file, params.model_file, loadcaffe_backend):float()
   cnn = MaybePutOnGPU(cnn, params)
   
-  local end_image_idx = params.num_images + params.start_number - 1
+  local num_images = params.num_images
+  if num_images == 0 then
+    num_images = calcNumberOfContentImages(params)
+    print("Detected " .. num_images .. " content images.")
+  end
+  local end_image_idx = num_images + params.start_number - 1
 
   local style_images_caffe = getStyleImages(params)
   

@@ -16,7 +16,7 @@ cmd:option('-style_image', 'example/seated-nude.jpg',
 cmd:option('-style_blend_weights', 'nil')
 cmd:option('-content_pattern', 'example/marple8_%02d.ppm',
            'Content target pattern')
-cmd:option('-num_images', 5, 'Number of content images')
+cmd:option('-num_images', 0, 'Number of content images. Set 0 for autodetect.')
 cmd:option('-start_number', 1, 'Frame index to start with')
 cmd:option('-continue_with', 1, 'Continue with the given frame index.')
 cmd:option('-gpu', 0, 'Zero-indexed ID of the GPU to use; for CPU mode set -gpu = -1')
@@ -124,8 +124,14 @@ local function main(params)
   local firstImg = nil
   local flow_relative_indices_split = params.flow_relative_indices:split(",")
 
+  local num_images = params.num_images
+  if num_images == 0 then
+    num_images = calcNumberOfContentImages(params)
+    print("Detected " .. num_images .. " content images.")
+  end
+
   -- Iterate over all frames in the video sequence
-  for frameIdx=params.start_number + params.continue_with - 1, params.start_number + params.num_images - 1 do
+  for frameIdx=params.start_number + params.continue_with - 1, params.start_number + num_images - 1 do
 
     -- Set seed
     if params.seed >= 0 then
@@ -133,6 +139,10 @@ local function main(params)
     end
 
     local content_image = getContentImage(frameIdx, params)
+    if content_image == nil then
+      print("No more frames.")
+      do return end
+    end
     local content_losses, temporal_losses = {}, {}
     local additional_layers = 0
     local num_iterations = frameIdx == params.start_number and tonumber(numIters_first) or tonumber(numIters_subseq)

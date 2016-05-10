@@ -48,7 +48,7 @@ Arguments can be given by command line and/or written in a file with one argumen
 **Basic arguments**:
 * `-style_image`: The style image.
 * `-content_pattern`: A file path pattern for the individual frames of the videos, for example `frame_%04d.png`.
-* `-num_images`: The number of frames.
+* `-num_images`: The number of frames. Set to `0` to process all avalable frames.
 * `-start_number`: The index of the first frame. Default: 1
 * `-gpu`: Zero-indexed ID of the GPU to use; for CPU mode set `-gpu` to -1.
 
@@ -116,6 +116,7 @@ Arguments can be given by command line and/or written in a file with one argumen
   the option is here.
 * `-backend`: `nn`, `cudnn` or `clnn`. Default is `nn`. `cudnn` requires
   [cudnn.torch](https://github.com/soumith/cudnn.torch) and may reduce memory usage.
+  `clnn` requires [cltorch](https://github.com/hughperkins/cltorch) and [clnn](https://github.com/hughperkins/clnn).
 * `-cudnn_autotune`: When using the cuDNN backend, pass this flag to use the built-in cuDNN autotuner to select
   the best convolution algorithms for your architecture. This will make the first iteration a bit slower and can
   take a bit more memory, but may significantly speed up the cuDNN backend.
