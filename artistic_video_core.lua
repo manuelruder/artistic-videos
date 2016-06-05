@@ -555,10 +555,13 @@ end
 function build_OutFilename(params, image_number, iterationOrRun)
   local ext = paths.extname(params.output_image)
   local basename = paths.basename(params.output_image, ext)
+  local fileNameBase = '%s%s-' .. params.number_format
   if iterationOrRun == -1 then
-    return string.format('%s%s-%d.%s', params.output_folder, basename, image_number, ext)
+    return string.format(fileNameBase .. '.%s',
+      params.output_folder, basename, image_number, ext)
   else
-    return string.format('%s%s-%d_%d.%s', params.output_folder, basename, image_number, iterationOrRun, ext)
+    return string.format(fileNameBase .. '_%d.%s',
+      params.output_folder, basename, image_number, iterationOrRun, ext)
   end
 end
 

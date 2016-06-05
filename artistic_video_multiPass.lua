@@ -20,6 +20,7 @@ cmd:option('-content_pattern', 'example/marple8_%02d.ppm',
 cmd:option('-num_images', 0, 'Number of content images. Set 0 for autodetect.')
 cmd:option('-start_number', 1, 'Frame index to start with')
 cmd:option('-gpu', 0, 'Zero-indexed ID of the GPU to use; for CPU mode set -gpu = -1')
+cmd:option('-number_format', '%d', 'Number format of the output images.')
 
 -- Flow options
 cmd:option('-forwardFlow_pattern', 'example/deepflow/forward_[%d]_{%d}.flo',
@@ -57,7 +58,7 @@ cmd:option('-print_iter', 50)
 cmd:option('-save_iter', 0)
 cmd:option('-output_image', 'out.png')
 cmd:option('-output_folder', '')
-cmd:option('-save_init', 0, 'Whether the initialization image should be saved (for debugging purposes).')
+cmd:option('-save_init', false, 'Whether the initialization image should be saved (for debugging purposes).')
 
 -- Other options
 cmd:option('-style_scale', 1.0)
@@ -244,8 +245,9 @@ local function main(params)
       
       img = MaybePutOnGPU(img, params)
 
-      if params.save_init >= 1 then
-        save_image(img, params.output_folder .. string.format('init-%02d_%02d.png', frameIdx, run))
+      if params.save_init then
+        save_image(img, params.output_folder .. string.format(
+          'init-' .. params.number_format .. '_%d.png', frameIdx, run))
       end
 
       -- Run the optimization to stylize the image, save the result to disk

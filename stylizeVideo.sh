@@ -31,7 +31,7 @@ mkdir -p $filename
 
 echo ""
 read -p "Which backend do you want to use? \
-For Nvidia GPU, use cudnn if avalable, otherwise nn. \
+For Nvidia GPU, use cudnn if available, otherwise nn. \
 For non-Nvidia GPU, use clnn. Note: You have to have the given backend installed in order to use it. [nn] $cr > " backend
 backend=${backend:-nn}
 
@@ -91,7 +91,8 @@ th artistic_video.lua \
 -style_image $style_image \
 -backend $backend \
 -gpu $gpu \
--cudnn_autotune
+-cudnn_autotune \
+-number_format %04d
 
 # Create video from output images.
-$FFMPEG -i ${filename}/out-%d.png ${filename}-stylized.$extension
+$FFMPEG -i ${filename}/out-%04d.png ${filename}-stylized.$extension

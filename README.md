@@ -93,10 +93,11 @@ Arguments can be given by command line and/or written in a file with one argumen
 
 **Output options**:
 * `-output_image`: Name of the output image. Default is `out.png` which will produce output images of the form *out-\<frameIdx\>.png* for the single-pass and *out-\<frameIdx\>_\<passIdx\>.png* for the multi-pass algorithm.
+* `-number_format`: Which number format to use for the output image. For example `%04d` adds up to three leading zeros. Some users reported that ffmpeg may use lexicographical sorting in some cases; therefore the output frames would be combined in the wrong order without leading zeros. Default: `%d`.
 * `-output_folder`: Directory where the output images should be saved. Must end with a slash.
 * `-print_iter`: Print progress every `print_iter` iterations. Set to 0 to disable printing.
 * `-save_iter`: Save the image every `save_iter` iterations. Set to 0 to disable saving intermediate results.
-* `-save_init`: Set to 1 to save the initialization image; 0 otherwise.
+* `-save_init`: If this option is present, the initialization image will be saved.
 
 **Other arguments**:
 * `-content_layers`: Comma-separated list of layer names to use for content reconstruction.

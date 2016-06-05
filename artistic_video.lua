@@ -20,6 +20,7 @@ cmd:option('-num_images', 0, 'Number of content images. Set 0 for autodetect.')
 cmd:option('-start_number', 1, 'Frame index to start with')
 cmd:option('-continue_with', 1, 'Continue with the given frame index.')
 cmd:option('-gpu', 0, 'Zero-indexed ID of the GPU to use; for CPU mode set -gpu = -1')
+cmd:option('-number_format', '%d', 'Number format of the output images.')
 
 --Flow options
 cmd:option('-flow_pattern', 'example/deepflow/backward_[%d]_{%d}.flo',
@@ -50,7 +51,7 @@ cmd:option('-print_iter', 100)
 cmd:option('-save_iter', 0)
 cmd:option('-output_image', 'out.png')
 cmd:option('-output_folder', '')
-cmd:option('-save_init', 0, 'Whether the initialization image should be saved (for debugging purposes).')
+cmd:option('-save_init', false, 'Whether the initialization image should be saved (for debugging purposes).')
 
 -- Other options
 cmd:option('-style_scale', 1.0)
@@ -248,9 +249,10 @@ local function main(params)
       os.exit()
     end
     img = MaybePutOnGPU(img, params)
-    if params.save_init >= 1 then
+    if params.save_init then
       save_image(img,
-        string.format('%sinit-%02d.png', params.output_folder, math.abs(frameIdx - params.start_number + 1)))
+        string.format('%sinit-' .. params.number_format .. '.png',
+          params.output_folder, math.abs(frameIdx - params.start_number + 1)))
     end
 
     -- Run the optimization to stylize the image, save the result to disk
