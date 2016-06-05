@@ -19,17 +19,17 @@ Tested with Ubuntu 14.04.
 
 A fast GPU with a large amount of video memory is recommended to execute this script. The ability to run in CPU mode is impractical due to the enormous running time.
 
-For a resolution of 450x350, you will need at least a 4GB GPU (around 3,5 GB memory usage). If you use cuDNN, a 2GB GPU is sufficient (around 1,7GB memory usage). Memory usage scales lineary with resolution, so if you experience an out of memory error, downscale the video.
+For a resolution of 450x350, you will need at least a 4GB GPU (around 3,5 GB memory usage). If you use cuDNN, a 2GB GPU is sufficient (around 1,7GB memory usage). Memory usage scales linearly with resolution, so if you experience an out of memory error, downscale the video.
 
 Other ways to reduce memory footprint are to use the ADAM optimizer instead of L-BFGS and/or to use the NIN Imagenet model instead of VGG-19. However, we didn't test our method with either of these and you will likely get inferior results.
 
 ## Simple style transfer
 
-To perform style transfer with mostly the default parameters, execute `stylizeVideo.sh <path_to_video> <path_to_style_image>`. This script will perform all the steps necessay to create a stylized version of the video. Note: You have to have ffmpeg (or libav-tools for Ubuntu 14.10 and earlier) installed.
+To perform style transfer with mostly the default parameters, execute `stylizeVideo.sh <path_to_video> <path_to_style_image>`. This script will perform all the steps necessary to create a stylized version of the video. Note: You have to have ffmpeg (or libav-tools for Ubuntu 14.10 and earlier) installed.
 
 ## Advanced Usage
 
-Please read the script `stylizeVideo.sh` to see which setps you have to perform in advance exactly. Basically you have to save the frames of the video as individual image files and you have to compute the optical flow between all adjacent frames as well as the certainty of the flow field (both can be accomplished with `makeOptFlow.sh`).
+Please read the script `stylizeVideo.sh` to see which steps you have to perform in advance exactly. Basically you have to save the frames of the video as individual image files and you have to compute the optical flow between all adjacent frames as well as the certainty of the flow field (both can be accomplished with `makeOptFlow.sh`).
 
 There are two versions of this algorithm, a single-pass and a multi-pass version. The multi-pass version yields better results in case of strong camera motion, but needs more iterations per frame.
 
@@ -48,14 +48,14 @@ Arguments can be given by command line and/or written in a file with one argumen
 **Basic arguments**:
 * `-style_image`: The style image.
 * `-content_pattern`: A file path pattern for the individual frames of the videos, for example `frame_%04d.png`.
-* `-num_images`: The number of frames. Set to `0` to process all avalable frames.
+* `-num_images`: The number of frames. Set to `0` to process all available frames.
 * `-start_number`: The index of the first frame. Default: 1
 * `-gpu`: Zero-indexed ID of the GPU to use; for CPU mode set `-gpu` to -1.
 
 **Arguments for the single-pass algorithm** (only present in `artistic_video.lua`)
 * `-flow_pattern`: A file path pattern for files that store the backward flow between the frames. The placeholder in square brackets refers to the frame position where the optical flow starts and the placeholder in braces refers to the frame index where the optical flow points to. For example `flow_[%02d]_{%02d}.flo` means the flow files are named *flow_02_01.flo*, *flow_03_02.flo*, etc. If you use the script included in this repository (makeOptFlow.sh), the filename pattern will be `backward_[%d]_{%d}.flo`.
 * `-flowWeight_pattern`: A file path pattern for the weights / certainty of the flow field. These files should be a grey scale image where a white pixel indicates a high flow weight and a black pixel a low weight, respective. Same format as above. If you use the script, the filename pattern will be `reliable_[%d]_{%d}.pgm`.
-* `-flow_relative_indices`: The indices for the long-term consistency constraint as comma-separated list. Indices should be relative to the current frame. For example `1,2,4` means it uses frames *i-1*,*i-2* and *i-4* warped for current frame at position *i* as consistency constraint. Default value is 1 which means it uses short-term consistency only. If you use non-default values you have to compute the corresponding long-term flow as well.
+* `-flow_relative_indices`: The indices for the long-term consistency constraint as comma-separated list. Indices should be relative to the current frame. For example `1,2,4` means it uses frames *i-1*,*i-2* and *i-4* warped for current frame at position *i* as consistency constraint. Default value is 1 which means it uses short-term consistency only. If you use non-default values, you have to compute the corresponding long-term flow as well.
 
 **Arguments for the multi-pass algorithm** (only present in `artistic_video_multiPass.lua`)
 * `-forwardFlow_pattern`: A file path pattern for the forward flow. Same format as in `-flow_pattern`.
@@ -105,7 +105,7 @@ Arguments can be given by command line and/or written in a file with one argumen
 * `-style_layers`: Comman-separated list of layer names to use for style reconstruction.
   Default is `relu1_1,relu2_1,relu3_1,relu4_1,relu5_1`.
 * `-style_blend_weights`: The weight for blending the style of multiple style images, as a
-  comma-separated list, such as `-style_blend_weights 3,7`. By default all style images
+  comma-separated list, such as `-style_blend_weights 3,7`. By default, all style images
   are equally weighted.
 * `-style_scale`: Scale at which to extract features from the style image, relative to the size of the content video. Default is `1.0`.
 * `-proto_file`: Path to the `deploy.txt` file for the VGG Caffe model.
