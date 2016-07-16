@@ -27,6 +27,10 @@ Other ways to reduce memory footprint are to use the ADAM optimizer instead of L
 
 To perform style transfer with mostly the default parameters, execute `stylizeVideo.sh <path_to_video> <path_to_style_image>`. This script will perform all the steps necessary to create a stylized version of the video. Note: You have to have ffmpeg (or libav-tools for Ubuntu 14.10 and earlier) installed.
 
+## FAQ
+
+See [here](https://github.com/manuelruder/artistic-videos/issues?q=label%3Aquestion) for a list of frequently asked question.
+
 ## Advanced Usage
 
 Please read the script `stylizeVideo.sh` to see which steps you have to perform in advance exactly. Basically you have to save the frames of the video as individual image files and you have to compute the optical flow between all adjacent frames as well as the certainty of the flow field (both can be accomplished with `makeOptFlow.sh`).
