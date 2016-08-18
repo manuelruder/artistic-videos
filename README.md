@@ -64,8 +64,8 @@ Arguments can be given by command line and/or written in a file with one argumen
 **Arguments for the multi-pass algorithm** (only present in `artistic_video_multiPass.lua`)
 * `-forwardFlow_pattern`: A file path pattern for the forward flow. Same format as in `-flow_pattern`.
 * `-backwardFlow_pattern`: A file path pattern for the backward flow. Same format as above.
-* `-forwardFlow_weights_pattern`: A file path pattern for the forward-flow. Same format as above.
-* `-backwardFlow_weights_pattern`: A file path pattern for the backward flow. Same format as above.
+* `-forwardFlow_weight_pattern`: A file path pattern for the forward-flow. Same format as above.
+* `-backwardFlow_weight_pattern`: A file path pattern for the backward flow. Same format as above.
 * `-num_passes`: Number of passes. Default: 15.
 * `-use_temporalLoss_after`: Uses temporal consistency loss in given pass and afterwards. Default: `8`.
 * `-blendWeight`: The blending factor of the previous stylized frame. The higher this value, the stronger the temporal consistency. Default value is `1` which means that the previous stylized frame is blended equally with the current frame.
