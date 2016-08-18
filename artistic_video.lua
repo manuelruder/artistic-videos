@@ -118,10 +118,12 @@ local function main(params)
   end
   collectgarbage()
 
+  -- There can be different setting for the first frame and for subsequent frames.
   local num_iterations_split = params.num_iterations:split(",")
   local numIters_first, numIters_subseq = num_iterations_split[1], num_iterations_split[2] or num_iterations_split[1]
   local init_split = params.init:split(",")
   local init_first, init_subseq = init_split[1], init_split[2] or init_split[1]
+  
   local firstImg = nil
   local flow_relative_indices_split = params.flow_relative_indices:split(",")
 
@@ -147,9 +149,10 @@ local function main(params)
     local content_losses, temporal_losses = {}, {}
     local additional_layers = 0
     local num_iterations = frameIdx == params.start_number and tonumber(numIters_first) or tonumber(numIters_subseq)
-    -- previous image indices (for long-term flow)
     local init = frameIdx == params.start_number and init_first or init_subseq
+    -- stores previous image indices used for the temporal constraint
     local J = {}
+    -- stores previous image(s) warped
     local imgsWarped = {}
     
     -- Calculate from which indices we need a warped image
@@ -210,7 +213,7 @@ local function main(params)
         end
         -- Preprocess flow weights, calculate long-term weights
         processFlowWeights(flowWeightsTabl, params.combine_flowWeights_method, params.invert_flowWeights)
-        -- Create loss modules, one for each frame
+        -- Create loss modules, one for each previous frame warped
         for j=1, #J do
           local flowWeights = flowWeightsTabl[j]
           flowWeights = flowWeights:expand(3, flowWeights:size(2), flowWeights:size(3))
@@ -315,6 +318,7 @@ function processFlowWeights(flowWeightsTabl, method, invert)
       flowWeightsTabl[j]:cdiv(sum)
     end
   elseif method == 'closestFirst' then
+    -- Take the closest previous frame(s).
     for j=2, #flowWeightsTabl do
       for k=1, j-1 do
         flowWeightsTabl[j]:add(-1, flowWeightsTabl[j-k])

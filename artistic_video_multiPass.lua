@@ -156,9 +156,12 @@ local function main(params)
       local additional_layers = 0
       local num_iterations = params.num_iterations
 
-      -- Image warped with optical flow from content images
-      local prevImageWarped, nextImageWarped, imageWarped = nil , nil, nil
+      -- Previous and following frame warped
+      local prevImageWarped, nextImageWarped = nil, nil
+      -- The warped frame which will be used for temporal consistency.
+      local imageWarped = nil
       
+      -- Find out if we are forward or backward pass, and set "imageWarped" accordingly.
       if frameIdx > params.start_number then
         prevImageWarped = readPrevImageWarped(frameIdx, params, run - (1 - flag), false)
       end
@@ -205,6 +208,7 @@ local function main(params)
       end
 
       if run == 1 then
+        -- For the first run, process the frames independently
         if frameIdx == params.start_number or params.init == 'random' then
           img = randImg:clone():float()
         elseif init == 'image' then
@@ -217,8 +221,9 @@ local function main(params)
           os.exit()
         end
       else
-        -- Blend frames from the previous iteration with the last processed image
+        -- For subsequent runs, blend neighboring frames into the current frame
         img = image.load(build_OutFilename(params, frameIdx, run - 1), 3)
+        -- Make sure to correctly normalize the result
         local divisor = torch.zeros(content_image_caffe:size())
         divisor:add(1)
         if frameIdx > params.start_number then
@@ -250,7 +255,7 @@ local function main(params)
           'init-' .. params.number_format .. '_%d.png', frameIdx, run))
       end
 
-      -- Run the optimization to stylize the image, save the result to disk
+      -- Run the optimization for some iterations, save the result to disk
       runOptimization(params, net, content_losses, style_losses, prevPlusFlow_losses,
           img, frameIdx, run, num_iterations)
 
@@ -270,6 +275,8 @@ local function main(params)
 
 end
 
+-- warp previous frame.
+-- Disocclusions at the borders will be filled with the VGG mean pixel, if pad_mean_pixel is true.
 function readPrevImageWarped(idx, params, run, pad_mean_pixel)
   local flowFileName = getFormatedFlowFileName(params.backwardFlow_pattern, idx-1, idx)
   print(string.format('Reading backward flow file "%s".', flowFileName))
@@ -294,6 +301,8 @@ function readPrevImageWarped(idx, params, run, pad_mean_pixel)
   return result
 end
 
+-- warp following frame.
+-- Disocclusions at the borders will be filled with the VGG mean pixel, if pad_mean_pixel is true.
 function readNextImageWarped(idx, params, run, pad_mean_pixel)
   local flowFileName = getFormatedFlowFileName(params.forwardFlow_pattern, idx+1, idx)
   print(string.format('Reading forward flow file "%s".', flowFileName))

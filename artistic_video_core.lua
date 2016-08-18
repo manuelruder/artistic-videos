@@ -160,8 +160,8 @@ function buildNet(cnn, params, style_images_caffe)
   
   local content_layers = params.content_layers:split(",")
   local style_layers = params.style_layers:split(",")
-  -- When temporal_weight > 0 use a pixel based loss. So set up the loss function before any layers of the nn
-  -- (indicated by initWeighted).
+  -- Which layer to use for the temporal loss. By default, it uses a pixel based loss, masked by the certainty
+  --(indicated by initWeighted).
   local temporal_layers = params.temporal_weight > 0 and {'initWeighted'} or {}
   
   local style_losses = {}
@@ -172,6 +172,7 @@ function buildNet(cnn, params, style_images_caffe)
   local current_layer_index = 1
   local net = nn.Sequential()
   
+  -- Set up pixel based loss.
   if temporal_layers[next_temporal_i] == 'init' or temporal_layers[next_temporal_i] == 'initWeighted'  then
     print("Setting up temporal consistency.")
     table.insert(contentLike_layers_indices, current_layer_index)
@@ -180,6 +181,8 @@ function buildNet(cnn, params, style_images_caffe)
     next_temporal_i = next_temporal_i + 1
   end
   
+  -- Set up other loss modules.
+  -- For content loss, only remember the indices at which they are inserted, because the content changes for each frame.
   if params.tv_weight > 0 then
     local tv_mod = nn.TVLoss(params.tv_weight):float()
     tv_mod = MaybePutOnGPU(tv_mod, params) 
