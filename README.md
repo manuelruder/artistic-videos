@@ -8,6 +8,11 @@ Our algorithm allows to transfer the style from one image (for example, a painti
 
 [![Artistic style transfer for videos](http://img.youtube.com/vi/Khuj4ASldmU/0.jpg)](https://www.youtube.com/watch?v=Khuj4ASldmU "Artistic style transfer for videos")
 
+## Contact
+
+For issues or questions related to this implementation, please use the [issue tracker](https://github.com/manuelruder/artistic-videos/issues).
+For everything else, including licensing issues, please email us. Our contact details can be found in [our paper](http://arxiv.org/pdf/1604.08610.pdf).
+
 ## Setup
 
 Tested with Ubuntu 14.04.
