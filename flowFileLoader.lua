@@ -3,7 +3,7 @@ require 'image'
 
 --[[
   Reads a flow field from a binary flow file.
-  
+
    bytes   contents
     0-3     tag: "PIEH" in ASCII, which in little endian happens to be the float 202021.25
             (just a sanity check that floats are represented correctly)
@@ -19,10 +19,14 @@ local function flowFileLoader_load(fileName)
   local H = flowFile:readInt()
   -- image.warp needs 2xHxW, and also expects (y, x) for some reason...
   local flow = torch.Tensor(2, H, W)
-  for y=1, H do
-    for x=1, W do
-      flow[2][y][x] = flowFile:readFloat()
-      flow[1][y][x] = flowFile:readFloat()
+  local raw_flow = torch.data(flow)
+  local elems_in_dim = H * W
+  local storage = flowFile:readFloat(2 * elems_in_dim)
+  for y=0, H - 1 do
+    for x=0, W - 1 do
+      local shift = y * W + x
+      raw_flow[elems_in_dim + shift] = storage[2 * shift + 1]
+      raw_flow[shift] = storage[2 * shift + 2]
     end
   end
   flowFile:close()
