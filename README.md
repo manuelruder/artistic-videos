@@ -145,7 +145,8 @@ If you use this code or its parts in your research, please cite the following pa
 @TechReport{RuderDB2016,
   author = {Manuel Ruder and Alexey Dosovitskiy and Thomas Brox},
   title = {Artistic style transfer for videos},
-  institution  = "arXiv:1604.08610",
-  year         = "2016",
+  booktitle = {German Conference on Pattern Recognition},
+  pages     = {26--36},
+  year      = {2016},
 }
 ```
