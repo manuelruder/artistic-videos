@@ -4,7 +4,7 @@ This is the torch implementation for the paper "[Artistic style transfer for vid
 
 Our algorithm allows to transfer the style from one image (for example, a painting) to a whole video sequence and generates consistent and stable stylized video sequences.
 
-UPDATE: A much faster version is avaliable at [fast-artistic-videos](https://github.com/manuelruder/fast-artistic-videos). It only runs on precomputed styles though.
+**UPDATE:** A much faster version which runs in under one second per frame is avaliable at [fast-artistic-videos](https://github.com/manuelruder/fast-artistic-videos), but it only works for precomputed style templates. This repository allows arbitrary styles, but needs several minutes per frame.
 
 **Example video:**
 
@@ -142,9 +142,9 @@ Arguments can be given by command line and/or written in a file with one argumen
 If you use this code or its parts in your research, please cite the following paper:
 
 ```
-@TechReport{RuderDB2016,
+@inproceedings{RuderDB2016,
   author = {Manuel Ruder and Alexey Dosovitskiy and Thomas Brox},
-  title = {Artistic style transfer for videos},
+  title = {Artistic Style Transfer for Videos},
   booktitle = {German Conference on Pattern Recognition},
   pages     = {26--36},
   year      = {2016},
